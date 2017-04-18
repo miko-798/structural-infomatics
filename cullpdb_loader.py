@@ -2,43 +2,56 @@
 # coding: utf-8
 
 # In[1]:
-
+# Import some libraries
 import os
 import numpy as np
 
 
 # In[2]:
 
+# Define which files to load and its path
 FILE = "data/cullpdb+profile_6133.npy.gz"
 FILTERED = "data/cullpdb+profile_6133_filtered.npy.gz"
 FILEPATH = os.path.abspath(os.path.join(os.getcwd(), FILE))
 
+# Define some constants
+# Number of amino acids residues in the input
 RESIDUE_SIZE = 22
+# Number of labels for the amino acids
 NUM_LABELS = 9
 
 # for unfiltered cbd dataset:
 TRAIN = 5600  # [0, 5600)
 TEST = 5877  # [5600, 5877)
 VAL = 6133  # [5877, 6133)
+# Total number of data
 DATA_SIZE = 6133
 
-RESIDUE_IND = 22  # [0, 22) for each amino acid
-LABEL_IND = 31  # [22, 31) for each amino acid
-PSSM_IND = 35
-NUM_FEATURES = 57  # per residue
+# The index limits
+RESIDUE_IND = 22  # Index [0, 22) for each amino acid
+LABEL_IND = 31  # Index [22, 31) for each amino acid
+
+PSSM_IND = 35   # Index [35, 57) for each amino acid
+NUM_FEATURES = 57  # per residue, sequence profile
+                   
 NUM_RESIDUES = 700  # per protein
 
 # Symbols: "-" placeholder for "NoSeq"
-RESIDUES = ['A', 'C', 'E', 'D', 'G', 'F', 'I', 'H', 'K', 'M',             'L', 'N', 'Q', 'P', 'S', 'R', 'T', 'W', 'V', 'Y', 'X','-']
+RESIDUES = ['A', 'C', 'E', 'D', 'G', 'F', 'I', 'H', 'K', 'M', 'L', 'N', 'Q', 'P', 'S', 'R', 'T', 'W', 'V', 'Y', 'X','-']
 LABELS = ['L', 'B', 'E', 'G', 'I', 'H', 'S', 'T','-']
 
 
-# The 57 features are:<br>
-# "[0,22): amino acid residues, with the order of 'A', 'C', 'E', 'D', 'G', 'F', 'I', 'H', 'K', 'M', 'L', 'N', 'Q', 'P', 'S', 'R', 'T', 'W', 'V', 'Y', 'X','NoSeq'"<br>
+# The 57 features are: <br>
+# "[0,22): amino acid residues, with the order of 'A', 'C', 'E', 'D', 'G', 'F', 'I', 'H', 'K', 'M', 'L', 'N', 'Q', 'P', 
+# 'S', 'R', 'T', 'W', 'V', 'Y', 'X','NoSeq'"<br>
 # "[22,31): Secondary structure labels, with the sequence of 'L', 'B', 'E', 'G', 'I', 'H', 'S', 'T','NoSeq'"<br>
 # "[31,33): N- and C- terminals;"<br>
-# "[33,35): relative and absolute solvent accessibility, used only for training. (absolute accessibility is thresholded at 15; relative accessibility is normalized by the largest accessibility value in a protein and thresholded at 0.15; original solvent accessibility is computed by DSSP)"<br>
-# "[35,57): sequence profile. Note the order of amino acid residues is ACDEFGHIKLMNPQRSTVWXY and it is different from the order for amino acid residues"<br>
+# "[33,35): relative and absolute solvent accessibility, used only for training. (absolute accessibility is thresholded
+# at 15; relative accessibility is normalized by the largest accessibility value in a protein and thresholded at 0.15; 
+# original solvent accessibility is computed by DSSP)"<br>
+# "[35,57): sequence profile. Note the order of amino acid residues is ACDEFGHIKLMNPQRSTVWXY and it is different from
+# the order for amino acid residues"<br>
+
 # <br>
 # The last feature of both amino acid residues and secondary structure labels just mark end of the protein sequence.<br>
 # "[22,31) and [33,35) are hidden during testing."<br>
@@ -59,19 +72,24 @@ LABELS = ['L', 'B', 'E', 'G', 'I', 'H', 'S', 'T','-']
 
 
 # In[4]:
-
+# extract columns for residues, labels, pssm (seq profile)
 def _get_cols(pssm=False):
-    # extract columns for residues, labels, pssm (seq profile)
+    
+    # creating two lists, for the feature and label respectively
     feature_cols = []
     label_cols = []
-    for i in range(NUM_RESIDUES*NUM_FEATURES):
+    for i in range(NUM_RESIDUES * NUM_FEATURES):
         j = i % NUM_FEATURES
+        # append the element in the list feature_col
         if j < RESIDUE_IND:
             feature_cols.append(i)
+        # append the element in the list label_col
         elif j < LABEL_IND:
             label_cols.append(i)
+        # append the element in the list feature_col
         elif pssm and PSSM_IND <= j:
             feature_cols.append(i)
+            
     return feature_cols, label_cols
 
 
